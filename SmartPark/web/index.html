@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Parkwise | Vehicle Parking System</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="brand-mark">P</span><span>Parkwise</span></div>
+      <nav><a href="#availability">Availability</a><a href="#manage">Manage areas</a></nav>
+    </header>
+    <main>
+      <section class="hero">
+        <div><p class="eyebrow">VEHICLE PARKING SYSTEM</p><h1>Find space before you arrive.</h1><p class="hero-copy">Live parking availability for your campus, office, or facility.</p></div>
+        <div class="hero-stat"><span id="hero-available">--</span><small>spaces available now</small></div>
+      </section>
+      <section class="summary" aria-label="Parking summary">
+        <article><span>Total capacity</span><strong id="total-capacity">--</strong></article>
+        <article><span>Occupied</span><strong id="total-occupied">--</strong></article>
+        <article><span>Available</span><strong id="total-available">--</strong></article>
+        <article><span>Active vehicle sessions</span><strong id="total-sessions">--</strong></article>
+      </section>
+      <section id="best-spot" class="spot-section">
+        <p class="eyebrow">PARK WITH A PLAN</p><h2>Find My Best Spot</h2>
+        <p>Where are you heading? Compare the walk with the space available right now.</p>
+        <form id="spot-form" class="spot-form">
+          <label>Destination<select id="spot-destination" required><option value="">Loading destinations…</option></select></label>
+          <label>Your priority<select id="spot-preference"><option value="balanced">Balance walking and availability</option><option value="walk">Shortest walk</option><option value="space">Most spaces available</option></select></label>
+          <button type="submit">Find my spot</button>
+        </form>
+        <div id="spot-result" role="status" aria-live="polite">Choose a destination to get a recommendation.</div>
+        <p class="spot-note">Walking times use a demo campus layout. Recommendations do not reserve a space. Counts reflect the latest recorded update.</p>
+      </section>
+      <section id="availability" class="section-heading"><div><p class="eyebrow">LIVE STATUS</p><h2>Parking availability</h2></div><button id="refresh" class="quiet-button">Refresh data</button></section>
+      <section class="tools" aria-label="Parking filters">
+        <label class="search"><span>Search</span><input id="area-search" type="search" placeholder="Search by area or location"></label>
+        <div class="filter-group" role="group" aria-label="Availability filter"><button class="filter active" data-filter="all">All areas</button><button class="filter" data-filter="available">Available</button><button class="filter" data-filter="full">Full</button></div>
+      </section>
+      <section id="area-grid" class="area-grid" aria-live="polite"></section>
+      <section class="vehicle-zone" id="vehicles">
+        <div class="vehicle-intro"><p class="eyebrow">VEHICLE LOG</p><h2>Check vehicles in and out</h2><p>Use a vehicle number for accurate active-session tracking. A future number-plate recognition service can create these records automatically.</p>
+          <form id="check-in-form" class="check-in-form">
+            <label>Vehicle number<input name="vehicleNumber" maxlength="20" required placeholder="e.g. MH 31 AB 1234"></label>
+            <label>Vehicle type<select name="vehicleType"><option>Car</option><option>Motorcycle</option><option>Electric vehicle</option><option>Other</option></select></label>
+            <label class="wide">Parking area<select name="areaId" id="session-area" required></select></label>
+            <button type="submit">Check in vehicle</button>
+          </form>
+        </div>
+        <div class="session-panel"><div class="session-heading"><h3>Active vehicles</h3><span id="session-count">0 vehicles</span></div><div id="session-list" class="session-list" aria-live="polite"></div></div>
+      </section>
+      <section class="activity">
+        <div class="activity-heading"><div><p class="eyebrow">ACTIVITY LOG</p><h2>Recent occupancy updates</h2></div><p>Every manual entry and exit is recorded.</p></div>
+        <div id="event-list" class="event-list" aria-live="polite"></div>
+      </section>
+      <section class="camera-zone" id="cameras">
+        <div class="camera-intro"><p class="eyebrow">CAMERA INTEGRATION</p><h2>Camera-ready occupancy input</h2><p>Register a camera against a parking area today. A future computer-vision service can send detected occupancy to the same endpoint without changing the dashboard.</p><a href="#camera-form">Configure a source</a></div>
+        <div class="camera-panel">
+          <div class="camera-panel-heading"><h3>Configured sources</h3><span id="camera-count">0 sources</span></div>
+          <div id="camera-list" class="camera-list"></div>
+          <form id="camera-form" class="camera-form">
+            <label>Camera name<input name="name" maxlength="60" required placeholder="e.g. East Gate Camera"></label>
+            <label>Parking area<select name="areaId" id="camera-area" required></select></label>
+            <label class="wide">Video endpoint (optional)<input name="endpoint" maxlength="250" placeholder="e.g. rtsp://camera-host/east-gate"></label>
+            <button type="submit">Add camera source</button>
+          </form>
+        </div>
+      </section>
+      <section id="manage" class="manage">
+        <div class="manage-intro"><p class="eyebrow">ADMINISTRATION</p><h2>Configure parking areas</h2><p>Add a location and its maximum capacity. The availability display updates immediately after every entry or exit.</p></div>
+        <form id="add-area-form" class="area-form">
+          <label>Area name<input name="name" maxlength="60" required placeholder="e.g. East Gate"></label>
+          <label>Location<input name="location" maxlength="90" placeholder="e.g. Engineering Building"></label>
+          <label>Maximum capacity<input name="capacity" type="number" min="1" max="100000" required placeholder="e.g. 50"></label>
+          <button type="submit">Add parking area</button>
+        </form>
+      </section>
+    </main>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <template id="area-template">
+      <article class="area-card">
+        <div class="area-card-header"><div><h3></h3><p class="location"></p></div><span class="status"></span></div>
+        <div class="availability-number"><strong class="available"></strong><span>spaces available</span></div>
+        <div class="progress"><span></span></div>
+        <dl><div><dt>Capacity</dt><dd class="capacity"></dd></div><div><dt>Occupied</dt><dd class="occupied"></dd></div></dl>
+        <div class="controls"><button class="entry">Vehicle entry</button><button class="exit">Vehicle exit</button><button class="set-count">Set count</button><button class="edit">Edit</button><button class="delete" title="Delete area">Delete</button></div>
+      </article>
+    </template>
+    <template id="camera-template">
+      <article class="camera-source"><div><strong></strong><p></p></div><span class="camera-state">Ready</span><button class="run-scan">Simulate scan</button></article>
+    </template>
+    <template id="session-template">
+      <article class="session"><div class="plate"></div><div><strong></strong><p></p></div><time></time><button class="checkout">Check out</button></article>
+    </template>
+    <dialog id="area-dialog">
+      <form id="edit-area-form" method="dialog">
+        <div class="dialog-heading"><div><p class="eyebrow">AREA SETTINGS</p><h2>Edit parking area</h2></div><button class="close" value="cancel" aria-label="Close">×</button></div>
+        <input type="hidden" name="id">
+        <label>Area name<input name="name" maxlength="60" required></label>
+        <label>Location<input name="location" maxlength="90"></label>
+        <label>Maximum capacity<input name="capacity" type="number" min="1" max="100000" required></label>
+        <div class="dialog-actions"><button class="quiet-button" value="cancel">Cancel</button><button type="submit" value="default">Save changes</button></div>
+      </form>
+    </dialog>
+    <script src="app.js"></script>
+  </body>
+</html>
