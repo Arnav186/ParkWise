@@ -1,5 +1,0 @@
-{"demo": true, "destinations": [
-  {"id":"library","name":"Central Library","walkMinutes":{"North Gate":4,"Library Lot":1,"Sports Complex":8}},
-  {"id":"academic","name":"Academic Block","walkMinutes":{"North Gate":2,"Library Lot":5,"Sports Complex":9}},
-  {"id":"sports","name":"Sports Complex","walkMinutes":{"North Gate":7,"Library Lot":6,"Sports Complex":1}}
-]}

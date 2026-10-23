@@ -1,0 +1,14 @@
+.venv/
+.cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.log
+.server.pid
+test-output/
+data/
+tmp/
+output/
+models/
+.env
+.env.*

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#142b35">
+    <meta name="description" content="Local parking space detection powered by YOLO and OpenCV.">
+    <title>Parkwise · Parking overview</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23142b35'/%3E%3Ctext x='19' y='46' font-family='Arial' font-size='43' font-weight='700' fill='%237cddba'%3EP%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='editor.js') }}" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/" aria-label="Parkwise home"><span class="brand-mark" aria-hidden="true">P<span></span></span><span>parkwise<span class="brand-period">.</span></span></a>
+        <nav aria-label="Main navigation"><a class="nav-link" href="#overview" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Overview</a></nav>
+        <span class="local-label"><span class="local-dot" aria-hidden="true"></span>Local workspace</span>
+      </div>
+    </header>
+
+    <main id="overview" class="page-shell">
+      <section class="page-heading" aria-labelledby="page-title">
+        <div><p class="eyebrow">SMART PARKING MONITOR</p><h1 id="page-title">Parking overview</h1><p class="intro">Every space, at a glance.</p></div>
+        <div class="status-badge" id="status-badge" data-state="loading"><span class="status-dot" aria-hidden="true"></span><span id="status-text" role="status">Starting detector</span></div>
+      </section>
+
+      <div class="alert" id="error-banner" role="alert" hidden></div>
+
+      <section class="source-toolbar panel" aria-label="Video and parking zone setup">
+        <div class="source-picker"><label for="source-select">Your videos</label><select id="source-select" disabled><option>Loading video library…</option></select></div>
+        <button class="button button-secondary" id="upload-video" type="button">Upload video</button>
+        <input id="video-file" type="file" accept=".mp4,.mov,.avi,.mkv,.webm" hidden>
+        <button class="button button-primary" id="edit-zones" type="button" disabled>Edit parking zones</button>
+        <div class="upload-status" id="upload-status" role="status" hidden></div>
+        <progress id="upload-progress" max="100" value="0" aria-label="Video upload progress" hidden></progress>
+        <p class="source-help">MP4, MOV, AVI, MKV or WebM · up to 500 MB · saved on this computer</p>
+        <p class="source-message" id="source-message" role="status" hidden></p>
+      </section>
+      <div class="setup-notice" id="setup-notice" hidden>This video needs parking zones. Choose <strong>Edit parking zones</strong> to mark its spaces.</div>
+
+      <section class="stats-grid" aria-label="Parking occupancy summary">
+        <article class="stat-card available-card">
+          <div class="stat-top"><span class="stat-label">Available spaces</span><span class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 12 4 4 8-8"/></svg></span></div>
+          <div class="stat-value" id="available-count">—</div><p class="stat-foot"><span class="legend-dot available-dot" aria-hidden="true"></span>Ready to park</p>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span class="stat-label">Occupied spaces</span><span class="stat-icon occupied-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 10 2-5h10l2 5M4 10h16v8H4zM7 18v2m10-2v2M7 14h1m8 0h1"/></svg></span></div>
+          <div class="stat-value" id="occupied-count">—</div><p class="stat-foot"><span class="legend-dot occupied-dot" aria-hidden="true"></span>Vehicle detected</p>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span class="stat-label">Total spaces</span><span class="stat-icon total-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 16V8h3a2.5 2.5 0 0 1 0 5h-3"/></svg></span></div>
+          <div class="stat-value" id="total-count">—</div><p class="stat-foot">Configured detection zones</p>
+        </article>
+      </section>
+
+      <div class="monitor-grid">
+        <section class="panel feed-panel" aria-labelledby="feed-title">
+          <div class="panel-heading"><div><h2 id="feed-title">Parking camera</h2><p id="source-name">Sample parking video</p></div><span class="source-tag"><span aria-hidden="true">▸</span> RECORDED</span></div>
+          <div class="feed-stage" id="feed-stage">
+            <img id="video-feed" alt="Parking video: green available, coral occupied, amber checking" hidden>
+            <div class="feed-placeholder" id="feed-placeholder"><span class="loader" id="feed-loader" aria-hidden="true"></span><strong id="feed-message">Preparing your parking view</strong><span id="feed-detail">Loading the model and the first video frame…</span></div>
+            <span class="feed-caption" id="feed-caption" hidden><span class="status-dot" aria-hidden="true"></span><span id="feed-caption-text">Detection running</span></span>
+          </div>
+          <div class="playback">
+            <div class="playback-row"><div class="playback-buttons"><button class="button button-primary" id="toggle-playback" type="button" disabled><svg id="toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><span id="toggle-label">Pause</span></button><button class="button button-secondary" id="restart-playback" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6"/></svg>Restart</button></div><span class="timecode"><span id="current-time">0:00</span><span class="time-divider">/</span><span id="duration-time">--:--</span></span></div>
+            <progress id="video-progress" max="100" value="0" aria-label="Video playback progress"></progress>
+            <p class="playback-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3M4 8v5m16 3v-5"/></svg>Recorded video · loops automatically</p>
+          </div>
+        </section>
+
+        <section class="panel spaces-panel" aria-labelledby="spaces-title">
+          <div class="panel-heading"><div><h2 id="spaces-title">Space status</h2><p>Individual parking zones</p></div><span class="zone-count" id="zone-count">—</span></div>
+          <div class="space-legend"><span><i class="legend-dot available-dot" aria-hidden="true"></i>Available</span><span><i class="legend-dot occupied-dot" aria-hidden="true"></i>Occupied</span></div>
+          <div class="spaces-empty" id="spaces-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 16V8h3a2.5 2.5 0 0 1 0 5h-3"/></svg><p>Waiting for the first detection</p><span>Your parking spaces will appear here.</span></div>
+          <ul id="spaces-list" class="spaces-list" aria-label="Individual parking space occupancy"></ul>
+          <div class="occupancy-summary"><div><span>Occupancy</span><strong id="occupancy-percent">—</strong></div><progress id="occupancy-progress" max="100" value="0" aria-label="Parking occupancy"></progress><p id="occupancy-description">Waiting for detection data</p></div>
+        </section>
+      </div>
+
+      <section class="system-strip" aria-label="Detection details">
+        <div class="engine-label"><span class="engine-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 3v3m6-3v3M9 18v3m6-3v3M3 9h3m-3 6h3m12-6h3m-3 6h3"/></svg></span><div><span class="detail-label">Detection engine</span><strong id="model-name">YOLOv8n</strong></div></div>
+        <div class="system-detail"><span class="detail-label">Inference speed</span><strong><span id="inference-fps">—</span><span class="detail-unit"> FPS</span></strong></div>
+        <div class="system-detail"><span class="detail-label">Compute device</span><strong id="compute-device">Initializing</strong></div>
+        <div class="system-detail"><span class="detail-label">Confidence threshold</span><strong id="confidence-threshold">—</strong></div>
+      </section>
+      <p class="stability-note" id="stability-note">Stable detection confirms changes across several frames.</p>
+      <footer class="page-footer"><p>Colored zones are inferred occupied or available based on vehicle detections.</p><span>YOLO + OpenCV</span></footer>
+      <noscript><p class="alert">Enable JavaScript to view the parking detector and use playback controls.</p></noscript>
+    </main>
+    <dialog id="zone-editor" aria-labelledby="editor-title">
+      <div class="editor-header"><div><p class="eyebrow">PARKING ZONE EDITOR</p><h2 id="editor-title">Mark your parking spaces</h2><p id="editor-source"></p></div><button type="button" class="button button-secondary" id="close-editor" aria-label="Close parking zone editor">Close</button></div>
+      <p class="editor-instructions" id="editor-instructions">Click four corners around a parking space. Select an existing space to move it or drag its corner handles.</p>
+      <div class="editor-tools"><button class="button button-primary" type="button" id="draw-zone">Draw a space</button><button class="button button-secondary" type="button" id="add-rectangle">Add rectangle</button><button class="button button-secondary" type="button" id="undo-zone" disabled>Undo</button><button class="button button-secondary" type="button" id="delete-zone" disabled>Delete selected</button><button class="button button-secondary" type="button" id="cancel-drawing" hidden>Cancel drawing</button></div>
+      <div id="editor-stage" class="editor-stage"><img id="editor-image" alt="First frame of the selected video for marking parking spaces"><svg id="zone-canvas" viewBox="0 0 1000 1000" preserveAspectRatio="none" role="img" aria-label="Parking zone drawing surface"></svg></div>
+      <div class="editor-properties"><div><label for="zone-select">Selected space</label><select id="zone-select"><option value="-1">None</option></select></div><div><label for="smoothing-select">Detection stability</label><select id="smoothing-select"><option value="responsive">Responsive · 2 / 4 frames</option><option value="balanced">Balanced · 3 / 8 frames</option><option value="steady">Steady · 5 / 12 frames</option></select></div></div>
+      <fieldset id="corner-fields" disabled><legend>Corner coordinates (% of video width / height)</legend><div id="corner-inputs"></div></fieldset>
+      <p class="editor-hint">Stability confirms arrivals / departures after consecutive frames. Missed detections are tolerated longer before a space becomes available. Amber means the initial status is still being checked.</p>
+      <div id="editor-error" class="alert" role="alert" hidden></div>
+      <div class="editor-footer"><span id="editor-zone-count">0 spaces</span><span>Saving restarts detection with these zones.</span><button type="button" class="button button-primary" id="save-zones" disabled>Save zones &amp; start</button></div>
+    </dialog>
+  </body>
+</html>
