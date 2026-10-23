@@ -1,3 +1,7 @@
+<img width="393" height="736" alt="dashboard" src="https://github.com/user-attachments/assets/e8c63570-4a5d-4ea5-8080-994930fc9560" />
+
+<img width="393" height="736" alt="zone-editor" src="https://github.com/user-attachments/assets/6cad01a4-3474-4f17-bccf-821f9d218b10" />
+
 # Smart Parking Space Detector
 
 A YOLOv8 + OpenCV parking detector with a localhost dashboard and an optional desktop viewer. The bundled recorded video has 18 mapped parking spaces. Green zones are available; coral zones are occupied by detected vehicles.
@@ -104,5 +108,3 @@ The required YOLOv8 model and sample video are included in this repository.
 ```
 
 Occupancy is an estimate: a space is occupied when the center of a detected car, motorcycle, bus, or truck falls inside its polygon. People are excluded. Perspective, occlusion, lighting, and zone mapping can affect detection accuracy.
-
-Original project: [prajesdas/Smart-Parking-Space-Detector-using-YOLO-and-OpenCV](https://github.com/prajesdas/Smart-Parking-Space-Detector-using-YOLO-and-OpenCV).
